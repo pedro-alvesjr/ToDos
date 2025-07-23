@@ -1,7 +1,7 @@
 from sqlalchemy import Integer, Boolean, String, Column
 from database import Base
 
-class todo(Base):
+class Todo(Base):
     __tablename__ = 'todos'
 
     id = Column(Integer, primary_key=True, index=True)
