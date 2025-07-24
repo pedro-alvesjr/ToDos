@@ -19,6 +19,6 @@ def get_db():
         db.close()
 
 
-@app.get('/')
+@app.get("/")
 def read_all(db: Annotated[Session, Depends(get_db)]):
     return db.query(Todos).all()
