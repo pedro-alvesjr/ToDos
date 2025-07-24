@@ -18,7 +18,8 @@ def get_db():
     finally:
         db.close()
 
+db_dependency = Annotated[Session, Depends(get_db)]
 
 @app.get("/")
-def read_all(db: Annotated[Session, Depends(get_db)]):
+def read_all(db: db_dependency):
     return db.query(Todos).all()
