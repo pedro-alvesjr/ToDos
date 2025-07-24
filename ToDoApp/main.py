@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from models import Todos
 from database import engine, SessionLocal
 from typing import Annotated
+from pydantic import BaseModel, Field
 
 
 app = FastAPI()
@@ -19,6 +20,14 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+
+class TodoRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=25)
+    description: str = Field(min_length=1, max_length=50)
+    priority: int = Field(gt=0, lt=6)
+    complete: bool
+
 
 @app.get("/", status_code=status.HTTP_200_OK)
 def read_all(db: db_dependency):
