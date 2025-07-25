@@ -5,9 +5,12 @@ from models import Todos
 from database import engine, SessionLocal
 from typing import Annotated
 from pydantic import BaseModel, Field
+from routers import auth
 
 
 app = FastAPI()
+
+app.include_router(auth.router)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -76,4 +79,3 @@ def delete_todo(db: db_dependency,
     db.query(Todos).filter(Todos.id == todo_id).delete()
 
     db.commit()
-    
