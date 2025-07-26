@@ -5,6 +5,7 @@ from database import SessionLocal
 from models import Users
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 router = APIRouter()
@@ -19,6 +20,14 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+def authenticate_user(username: str, password: str, db):
+    user = db.query(Users).filter(Users.username == username).first()
+    if not user:
+        return False
+    if not bcrypt_context.verify(password, user.hashed_password):
+        return False
+    return True
 
 
 class CreateUserRequest(BaseModel):
@@ -44,3 +53,12 @@ def create_user(db: db_dependency, create_user_request: CreateUserRequest):
 
     db.add(create_user_request)
     db.commit()
+
+
+@router.post("/toker")
+def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+                           db: db_dependency):
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        return 'Failed authentication.'
+    return 'Successful authentication.'
