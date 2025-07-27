@@ -6,6 +6,8 @@ from models import Users
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import jwt
+from datetime import UTC, timedelta, datetime
 
 
 router = APIRouter()
@@ -21,6 +23,10 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+SECRET_KEY = 'u7T#9!xLqv8&PzRsYw@2NmEjDf4KhGcT'
+ALGORITHM = 'hs256'
+
+
 def authenticate_user(username: str, password: str, db):
     user = db.query(Users).filter(Users.username == username).first()
     if not user:
@@ -28,6 +34,12 @@ def authenticate_user(username: str, password: str, db):
     if not bcrypt_context.verify(password, user.hashed_password):
         return False
     return True
+
+def create_access_token(username: str, user_id: int, expires_delta: timedelta):
+    encode = {'sub': username, 'id': user_id}
+    expires = datetime.now(UTC) + expires_delta
+    encode.update({'exp': expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 class CreateUserRequest(BaseModel):
