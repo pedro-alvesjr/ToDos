@@ -24,7 +24,7 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 SECRET_KEY = 'u7T#9!xLqv8&PzRsYw@2NmEjDf4KhGcT'
-ALGORITHM = 'hs256'
+ALGORITHM = 'HS256'
 
 
 def authenticate_user(username: str, password: str, db):
@@ -33,7 +33,7 @@ def authenticate_user(username: str, password: str, db):
         return False
     if not bcrypt_context.verify(password, user.hashed_password):
         return False
-    return True
+    return user
 
 def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     encode = {'sub': username, 'id': user_id}
@@ -67,7 +67,7 @@ def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     db.commit()
 
 
-@router.post("/toker")
+@router.post("/token")
 def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                            db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)
