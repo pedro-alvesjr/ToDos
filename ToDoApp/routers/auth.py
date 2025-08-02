@@ -5,7 +5,7 @@ from database import SessionLocal
 from models import Users
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt
 from datetime import UTC, timedelta, datetime
 
@@ -13,6 +13,8 @@ from datetime import UTC, timedelta, datetime
 router = APIRouter()
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto') 
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl='token')
+
 
 def get_db():
     db = SessionLocal()
