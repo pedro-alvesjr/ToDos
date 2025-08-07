@@ -4,6 +4,7 @@ from models import Todos
 from database import SessionLocal
 from typing import Annotated
 from pydantic import BaseModel, Field
+from auth import get_current_user
 
 router = APIRouter()
 
@@ -16,6 +17,7 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 class TodoRequest(BaseModel):
@@ -40,9 +42,13 @@ def read_todo(db: db_dependency,
 
 
 @router.post("/todo", status_code=status.HTTP_201_CREATED)
-def create_todo(db: db_dependency, 
+def create_todo(user: user_dependency, 
+                db: db_dependency, 
                 todo_request: TodoRequest):
-    todo_model = Todos(**todo_request.model_dump())
+    if user is None:
+        raise HTTPException(status_code=401, detail='Could not validade user.')
+    todo_model = Todos(**todo_request.model_dump(), owner_id=user.get('id'))
+
     db.add(todo_model)
     db.commit()
 
