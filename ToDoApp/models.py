@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Boolean, String, Column
+from sqlalchemy import ForeignKey, Integer, Boolean, String, Column
 from database import Base
 
 
@@ -24,4 +24,4 @@ class Todos(Base):
     description = Column(String)
     priority = Column(Integer)
     complete = Column(Boolean, default=False)
-    
+    owner_id = Column(Integer, ForeignKey("users.id"))
