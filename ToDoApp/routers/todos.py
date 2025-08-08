@@ -33,11 +33,15 @@ def read_all(user: user_dependency, db: db_dependency):
 
 
 @router.get("/todo/{todo_id}", status_code=status.HTTP_200_OK)
-def read_todo(db: db_dependency, 
+def read_todo(user: user_dependency, 
+              db: db_dependency, 
               todo_id: int = Path(gt=0)):
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+    todo_model = db.query(Todos).filter(Todos.id == todo_id)\
+    .filter(Todos.owner_id == user.get('id')).first()
+    
     if todo_model:
         return todo_model
+    
     raise HTTPException(status_code=404, detail='ID not found')
 
 
