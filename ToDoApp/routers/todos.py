@@ -40,7 +40,7 @@ def read_todo(user: user_dependency,
         return HTTPException(status_code=401, detail='User not authenticated.')
     
     todo_model = db.query(Todos).filter(Todos.id == todo_id)\
-    .filter(Todos.owner_id == user.get('id')).first()
+        .filter(Todos.owner_id == user.get('id')).first()
     
     if todo_model:
         return todo_model
@@ -54,6 +54,7 @@ def create_todo(user: user_dependency,
                 todo_request: TodoRequest):
     if user is None:
         raise HTTPException(status_code=401, detail='Could not validade user.')
+    
     todo_model = Todos(**todo_request.model_dump(), owner_id=user.get('id'))
 
     db.add(todo_model)
@@ -61,10 +62,16 @@ def create_todo(user: user_dependency,
 
 
 @router.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_todo(db: db_dependency, 
+def update_todo(user: user_dependency, 
+                db: db_dependency, 
                 todo_request: TodoRequest,
                 todo_id: int = Path(gt=0)):
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+    if user is None:
+        return HTTPException(status_code=401, detail='User not authenticated.')
+
+    todo_model = db.query(Todos).filter(Todos.id == todo_id)\
+        .filter(Todos.owner_id == user.get('id')).first()
+    
     if todo_model is None:
         raise HTTPException(status_code=404, detail='ID not found.')
     
@@ -80,8 +87,9 @@ def update_todo(db: db_dependency,
 def delete_todo(db: db_dependency,
                 todo_id: int = Path(gt=0)):
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+    
     if todo_model is None:
         raise HTTPException(status_code=404, detail='ID not found.')
+    
     db.query(Todos).filter(Todos.id == todo_id).delete()
-
     db.commit()
