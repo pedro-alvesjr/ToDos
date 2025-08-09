@@ -36,6 +36,9 @@ def read_all(user: user_dependency, db: db_dependency):
 def read_todo(user: user_dependency, 
               db: db_dependency, 
               todo_id: int = Path(gt=0)):
+    if user is None:
+        return HTTPException(status_code=401, detail='User not authenticated.')
+    
     todo_model = db.query(Todos).filter(Todos.id == todo_id)\
     .filter(Todos.owner_id == user.get('id')).first()
     
