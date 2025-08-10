@@ -33,7 +33,7 @@ SECRET_KEY = 'u7T#9!xLqv8&PzRsYw@2NmEjDf4KhGcT'
 ALGORITHM = 'HS256'
 
 
-def authenticate_user(username: str, password: str, db):
+def authenticate_user(username: str, password: str, db: db_dependency):
     user = db.query(Users).filter(Users.username == username).first()
     if not user:
         return False
@@ -41,9 +41,9 @@ def authenticate_user(username: str, password: str, db):
         return False
     return user
 
-def create_access_token(username: str, user_id: int, user_role: str, expires_delta: timedelta):
+def create_access_token(username: str, user_id: int, role: str, expires_delta: timedelta):
     expires = datetime.now(UTC) + expires_delta
-    encode = {'sub': username, 'id': user_id, 'role': user_role, 'exp': expires}
+    encode = {'sub': username, 'id': user_id, 'role': role, 'exp': expires}
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
