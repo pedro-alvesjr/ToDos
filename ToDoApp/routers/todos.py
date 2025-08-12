@@ -29,6 +29,9 @@ class TodoRequest(BaseModel):
 
 @router.get("/", status_code=status.HTTP_200_OK)
 def read_all(user: user_dependency, db: db_dependency):
+    """
+    Retrieve all todos for the authenticated user.
+    """
     return db.query(Todos).filter(Todos.owner_id == user.get('id')).all()
 
 
@@ -36,6 +39,10 @@ def read_all(user: user_dependency, db: db_dependency):
 def read_todo(user: user_dependency, 
               db: db_dependency, 
               todo_id: int = Path(gt=0)):
+    """
+    Retrieve a specific todo by its ID for the authenticated user.
+    Raises 404 if the todo does not exist or does not belong to the user.
+    """
     if user is None:
         return HTTPException(status_code=401, detail='User not authenticated.')
     
@@ -52,6 +59,9 @@ def read_todo(user: user_dependency,
 def create_todo(user: user_dependency, 
                 db: db_dependency, 
                 todo_request: TodoRequest):
+    """
+    Create a new todo item for the authenticated user.
+    """
     if user is None:
         raise HTTPException(status_code=401, detail='Could not validade user.')
     
@@ -66,6 +76,10 @@ def update_todo(user: user_dependency,
                 db: db_dependency, 
                 todo_request: TodoRequest,
                 todo_id: int = Path(gt=0)):
+    """
+    Update an existing todo by ID for the authenticated user.
+    Raises 404 if the todo does not exist or does not belong to the user.
+    """
     if user is None:
         return HTTPException(status_code=401, detail='User not authenticated.')
 
@@ -87,6 +101,10 @@ def update_todo(user: user_dependency,
 def delete_todo(user: user_dependency, 
                 db: db_dependency,
                 todo_id: int = Path(gt=0)):
+    """
+    Delete a todo by ID for the authenticated user.
+    Raises 404 if the todo does not exist or does not belong to the user.
+    """
     if user is None:
         return HTTPException(status_code=401, detail='User not authenticated.')
 
