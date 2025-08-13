@@ -42,11 +42,17 @@ def authenticate_user(username: str, password: str, db: db_dependency):
     return user
 
 def create_access_token(username: str, user_id: int, role: str, expires_delta: timedelta):
+    """
+    Create the access JWT token and encode username, id, role and expiration in it.
+    """
     expires = datetime.now(UTC) + expires_delta
     encode = {'sub': username, 'id': user_id, 'role': role, 'exp': expires}
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    """
+    Get current user to check whether the token is still valid, or if it has been altered.
+    """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         username: str = payload.get('sub')
@@ -79,6 +85,9 @@ class Token(BaseModel):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_user(db: db_dependency, create_user_request: CreateUserRequest):
+    """
+    Creates a new user and adds it to the Users table.
+    """
     create_user_request = Users(
         email = create_user_request.email,
         username = create_user_request.username,
@@ -96,6 +105,11 @@ def create_user(db: db_dependency, create_user_request: CreateUserRequest):
 @router.post("/token", response_model = Token)
 def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                            db: db_dependency):
+    """
+    Authenticate a user and return a JWT access token.
+    This endpoint validates the provided username and password against the database.
+    If the credentials are correct, it generates a JWT token valid for 20 minutes.
+    """
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
