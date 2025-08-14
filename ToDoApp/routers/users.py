@@ -29,6 +29,4 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 @router.get('/user')
 def get_user(db: db_dependency, user: user_dependency):
-    current_user = db.query(Users).filter(Users.id == user.get('id')).first()
-
-    return current_user
+    return db.query(Users).filter(Users.id == user.get('id')).first()
