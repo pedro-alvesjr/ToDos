@@ -40,7 +40,7 @@ def get_user(db: db_dependency, user: user_dependency):
     return db.query(Users).filter(Users.id == user.get('id')).first()
 
 
-@router.put('/users/{user_id}')
+@router.put('/password', status_code=status.HTTP_204_NO_CONTENT)
 def change_password(db: db_dependency,
                     user: user_dependency,
                     password_verification: PasswordVerification):
