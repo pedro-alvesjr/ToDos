@@ -63,7 +63,7 @@ def create_todo(user: user_dependency,
     Create a new todo item for the authenticated user.
     """
     if user is None:
-        raise HTTPException(status_code=401, detail='Could not validade user.')
+        raise HTTPException(status_code=401, detail='User not authenticated.')
     
     todo_model = Todos(**todo_request.model_dump(), owner_id=user.get('id'))
 

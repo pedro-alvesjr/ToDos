@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Path
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from database import SessionLocal
 from models import Users
 from passlib.context import CryptContext
@@ -30,13 +30,28 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
-@router.get('/user')
+class PasswordVerification(BaseModel):
+    password: str
+    new_password: str = Field(min_length=5)
+
+
+@router.get('/user', status_code=status.HTTP_200_OK)
 def get_user(db: db_dependency, user: user_dependency):
     return db.query(Users).filter(Users.id == user.get('id')).first()
 
-@router.put('/users/{user_id}')
-def change_password(db: db_dependency, 
-                    user: user_dependency, 
-                    change_password_request: str = Path(min_length=5)):
-    user.get('hashed_password') = bcrypt_context.hash(change_password_request)
 
+@router.put('/users/{user_id}')
+def change_password(db: db_dependency,
+                    user: user_dependency,
+                    password_verification: PasswordVerification):
+    if user is None:
+        raise HTTPException(status_code=401, detail='User not authenticated')
+    
+    user_model = db.query(Users).filter(Users.id == user.get('id')).first()
+
+    if not bcrypt_context.verify(password_verification.password, user_model.hashed_password):
+        raise HTTPException(status_code=401, detail='User not authenticated')
+    user_model.hashed_password = bcrypt_context.hash(password_verification.new_password)
+
+    db.add(user_model)
+    db.commit()
